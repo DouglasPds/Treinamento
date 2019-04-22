@@ -7,6 +7,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import br.edu.unievangelica.ftt.seintegra.core.entity.AbstractEntity;
 import br.edu.unievangelica.ftt.seintegra.domain.instituicao.Instituicao;
 import br.edu.unievangelica.ftt.seintegra.domain.mantenedora.Mantenedora;
@@ -37,9 +39,11 @@ public class Endereco extends AbstractEntity {
 	@JoinColumn(name = "pais_id", referencedColumnName = "id")
 	private Pais pais;
 	
+	@JsonIgnore
 	@OneToOne(mappedBy = "endereco")
 	private Mantenedora mantenedora;
 	
+	@JsonIgnore
 	@OneToOne(mappedBy = "endereco")
 	private Instituicao instituicao;
 

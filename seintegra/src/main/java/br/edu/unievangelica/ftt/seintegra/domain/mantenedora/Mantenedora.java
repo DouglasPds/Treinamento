@@ -10,6 +10,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import br.edu.unievangelica.ftt.seintegra.core.entity.AbstractEntity;
 import br.edu.unievangelica.ftt.seintegra.domain.endereco.Endereco;
 import br.edu.unievangelica.ftt.seintegra.domain.instituicao.Instituicao;
@@ -33,6 +35,7 @@ public class Mantenedora extends AbstractEntity {
 	@JoinColumn(name = "endereco_id", referencedColumnName = "id")
 	private Endereco endereco;
 	
+	@JsonIgnore
 	@OneToMany(mappedBy = "mantenedora")
 	private List<Instituicao> instituicoes;
 
