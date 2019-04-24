@@ -9,6 +9,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -22,15 +24,19 @@ public class Mantenedora extends AbstractEntity {
 	
 	private static final long serialVersionUID = 1L;
 	
+	@NotEmpty
 	@Column(name = "nome", length = 80, nullable = false, unique = true)
 	private String nome;
 	
+	@NotEmpty
 	@Column(name = "razao_social", length = 80, nullable = false)
 	private String razaoSocial;
-	
+	 
+	@NotEmpty
 	@Column(name = "cnpj", length = 18, nullable = false, unique = true)
 	private String cnpj;
 	
+	@Valid
 	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "endereco_id", referencedColumnName = "id")
 	private Endereco endereco;
