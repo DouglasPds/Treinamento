@@ -1,5 +1,8 @@
 package br.edu.unievangelica.ftt.seintegra.core.exception;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,8 +17,8 @@ public class CustomExceptionHandler {
 		
 		List<FieldError> fieldErrors = new ArrayList<>();
 		
-		e.getErrors().getFieldError().forEach(error -> fiedErrors.add)
-			new FieldError(error.getField(),error.getDefault)
+		e.getErrors().getFieldErrors().forEach(error -> fieldErrors.add(
+			new FieldError(error.getField(),error.getDefaultMessage(), error.getCode())));
 		
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	}
