@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Pais } from '../pais';
+import { PaisService } from '../pais.service';
 
 @Component({
   selector: 'app-pais-list',
@@ -7,9 +9,15 @@ import { Component, OnInit } from '@angular/core';
 })
 export class PaisListComponent implements OnInit {
 
-  constructor() { }
+  // Declarações de variáveis
+  paises: Pais[];
+
+  constructor(private paisService: PaisService) { }
 
   ngOnInit() {
+
+    // Busca paises cadastrados no banco de dados
+    this.paisService.findAll().subscribe(paises => this.paises = paises);
   }
 
 }
