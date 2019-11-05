@@ -1,0 +1,44 @@
+    body{
+        background: #998888
+    }
+
+    body h1 {
+        color: #640607;
+    }
+
+    body > h1 {
+        color: green;
+    }
+
+    div + p {
+        background-color: chocolate;
+        color: white;
+    }
+
+    div ~ p {
+        background-color: crimson;
+        color: white;
+        padding: 10px;
+
+    }
+
+    body {
+        margin: 0;
+    }
+
+    h1:hover {
+        color: blue;
+    }
+
+    input::placeholder {
+        color: green;
+        background-color: black;
+        text-align: center;
+    }
+
+    input:focus + h1 {
+        color: rebeccapurple;
+        background-color: cornflowerblue;
+    }
+
+
