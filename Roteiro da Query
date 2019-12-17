@@ -1,0 +1,70 @@
+        
+
+
+        Roteiro da query
+
+        Para todos os alunos do curso, entrar nas dividas, cobranças, pagamentos(tipos de pagamento), somar todos eles e trazer o total.
+
+
+        Buscando pagamento pelo Aluno
+
+        select (a.*) from aluno as a
+        inner join unidade as u on u.id = a.unidade_id
+        inner join grade_curricular as gc on gc.id = a.grade_curricular_id
+        inner join curso_turno as ct on ct.id = gc.curso_turno_id
+        inner join curso as c on c.id = ct.curso_id
+        inner join divida as d on d.aluno_id = a.id
+        inner join cobranca as cb on cb.divida_id = d.id
+        inner join pagamento as p on c.id = p.cobranca_id
+        inner join pagamento_dinheiro as pd on pd.pagamento_id = p.id
+
+        where u.id = 1 and c.id = 1
+
+        Buscando pagamento
+
+        select (pdi.valor) from pagamento p
+	        inner join pagamento_dinheiro pdi on pdi.pagamento_id = p.id
+	        inner join cobranca cb on p.cobranca_id = cb.id
+	        inner join divida d on cb.divida_id = d.id
+	        inner join aluno a on d.aluno_id = a.id
+	        inner join grade_curricular as gc on gc.id = a.grade_curricular_id
+	        inner join curso_turno as ct on ct.id = gc.curso_turno_id
+	        inner join curso as c on c.id = ct.curso_id
+	        inner join unidade as u on u.id = c.unidade_id
+	        where (pdi.data_transacao) between '2019-12-03' and '2020-12-03' and
+		    cast (u.id as varchar(9)) like '%' || 1 || '%' and
+		    cast(c.id AS VARCHAR (9)) like '%' || 2 || '%';
+
+
+
+           select distinct(pdi.*) from pagamento p
+	inner join pagamento_dinheiro pdi on pdi.pagamento_id = p.id
+	inner join cobranca cb on p.cobranca_id = cb.id
+	inner join divida d on cb.divida_id = d.id
+	inner join aluno a on d.aluno_id = a.id
+	inner join grade_curricular as gc on gc.id = a.grade_curricular_id
+	inner join curso_turno as ct on ct.id = gc.curso_turno_id
+	inner join curso as c on c.id = ct.curso_id
+	inner join unidade as u on u.id = c.unidade_id
+	where cast (u.id as varchar(9)) like '%' || 1 || '%' and
+		cast(c.id AS VARCHAR (9)) like '%' || 2 || '%' and (
+	(pdi.data_transacao >= '2019-12-02' and '2019-12-05' is null) or pdi.data_transacao between '2019-12-02' and cast(cast('2019-12-05' as text) as date));
+		
+		
+
+
+
+        Exemplo do uso da query com data do resumo financeiro do aluno        
+
+        select c.* from cobranca c 
+            inner join divida d on c.divida_id = d.id
+            inner join aluno a on d.aluno_id = a.id
+            inner join unidade u on a.unidade_id = u.id
+            where cast (u.id as varchar(9)) like '%' || 1 || '%' and
+                  cast (a.matricula as varchar(9)) like '%' || 4 || '%' 
+            AND 
+             (c.data_vencimento >= '02/12/2019' AND '' IS NULL)
+             OR
+             c.data_vencimento BETWEEN '02/12/2019' AND CAST(CAST('10/12/2019' AS TEXT) AS DATE)
+
+
