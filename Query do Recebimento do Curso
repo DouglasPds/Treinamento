@@ -1,0 +1,160 @@
+﻿SELECT cb.* FROM cobranca AS cb
+	INNER JOIN divida AS d ON cb.divida_id = d.id
+	INNER JOIN aluno AS a ON d.aluno_id = a.id
+	INNER JOIN pessoa AS p ON a.pessoa_id = p.id
+	INNER JOIN unidade AS u ON a.unidade_id = u.id
+	INNER JOIN grade_curricular AS gc on a.grade_curricular_id = gc.id
+	INNER JOIN curso_turno AS ct ON gc.curso_turno_id = ct.id
+	INNER JOIN curso AS c ON ct.curso_id = c.id
+	INNER JOIN pagamento AS pg ON pg.cobranca_id = cb.id
+	INNER JOIN pagamento_dinheiro AS pgdi ON pgdi.pagamento_id = pg.id
+	INNER JOIN pagamento_deposito AS pgde ON pgde.pagamento_id = pg.id
+	INNER JOIN pagamento_cartao AS pgc ON pgc.pagamento_id = pg.id
+	WHERE u.id = 1
+	AND c.id = 1
+	AND ((data_transacao >= '2020-02-03' AND '2020-02-10' IS NULL) OR
+            data_transacao BETWEEN '2020-02-03' AND CAST(CAST('2020-02-10' AS TEXT) AS DATE))
+
+==========================================================================================================================================================================
+
+select sum(cb.valor_pago) FROM cobranca AS cb
+	INNER JOIN divida AS d ON cb.divida_id = d.id
+	INNER JOIN aluno AS a ON d.aluno_id = a.id
+	INNER JOIN unidade AS u ON a.unidade_id = u.id
+	INNER JOIN grade_curricular AS gc on a.grade_curricular_id = gc.id
+	INNER JOIN curso_turno AS ct ON gc.curso_turno_id = ct.id
+	INNER JOIN curso AS c ON ct.curso_id = c.id
+	INNER JOIN pagamento AS pg ON pg.cobranca_id = cb.id
+	FULL JOIN pagamento_dinheiro AS pgdi ON pgdi.pagamento_id = pg.id
+	FULL JOIN pagamento_deposito AS depo ON depo.pagamento_id = pg.id
+	FULL JOIN pagamento_cartao AS cart ON cart.pagamento_id = pg.id
+	WHERE u.id = 1
+	AND c.id = 1 and 
+
+	(depo.data_transacao BETWEEN '2020-02-07' and '2020-12-12') or (pgdi.data_transacao BETWEEN '2020-02-07' and '2020-12-12') or
+	(cart.data_transacao BETWEEN '2020-02-07' and '2020-12-12')
+
+==========================================================================================================================================================================
+
+select  curso.nome, curso.tipo_curso, (select sum(valor_pago) FROM cobranca AS cb
+	INNER JOIN divida AS d ON cb.divida_id = d.id
+	INNER JOIN aluno AS a ON d.aluno_id = a.id
+	INNER JOIN unidade AS u ON a.unidade_id = u.id
+	INNER JOIN grade_curricular AS gc on a.grade_curricular_id = gc.id
+	INNER JOIN curso_turno AS ct ON gc.curso_turno_id = ct.id
+	INNER JOIN curso AS c ON ct.curso_id = c.id
+	INNER JOIN pagamento AS pg ON pg.cobranca_id = cb.id
+	FULL JOIN pagamento_dinheiro AS pgdi ON pgdi.pagamento_id = pg.id
+	FULL JOIN pagamento_deposito AS depo ON depo.pagamento_id = pg.id
+	FULL JOIN pagamento_cartao AS cart ON cart.pagamento_id = pg.id
+
+	WHERE 
+
+	(depo.data_transacao BETWEEN '2020-02-07' and '2020-12-12') or (pgdi.data_transacao BETWEEN '2020-02-07' and '2020-12-12') or
+	(cart.data_transacao BETWEEN '2020-02-07' and '2020-12-12')) from curso
+	inner join unidade u on u.id = curso.unidade_id
+	WHERE
+	curso.id = 2
+
+==========================================================================================================================================================================
+select distinct curso.nome, curso.tipo_curso, (select distinct sum(pgdi.valor) FROM cobranca AS cb
+	INNER JOIN divida AS d ON cb.divida_id = d.id
+	INNER JOIN aluno AS a ON d.aluno_id = a.id
+	INNER JOIN unidade AS u ON a.unidade_id = u.id
+	INNER JOIN grade_curricular AS gc on a.grade_curricular_id = gc.id
+	INNER JOIN curso_turno AS ct ON gc.curso_turno_id = ct.id
+	INNER JOIN curso AS c ON ct.curso_id = c.id
+	INNER JOIN pagamento AS pg ON pg.cobranca_id = cb.id
+	INNER JOIN pagamento_dinheiro AS pgdi ON pgdi.pagamento_id = pg.id
+
+	WHERE pgdi.id not in (select pagamento_dinheiro_id from estorno_dinheiro) and
+	
+	(pgdi.data_transacao BETWEEN '2020-02-07' and '2020-12-12')) as dinheiro,
+	
+	(select distinct sum(depo.valor) from cobranca as cb 
+	INNER JOIN divida AS d ON cb.divida_id = d.id
+	INNER JOIN aluno AS a ON d.aluno_id = a.id
+	INNER JOIN unidade AS u ON a.unidade_id = u.id
+	INNER JOIN grade_curricular AS gc on a.grade_curricular_id = gc.id
+	INNER JOIN curso_turno AS ct ON gc.curso_turno_id = ct.id
+	INNER JOIN curso AS c ON ct.curso_id = c.id
+	INNER JOIN pagamento AS pg ON pg.cobranca_id = cb.id
+	INNER JOIN pagamento_deposito AS depo ON depo.pagamento_id = pg.id
+
+	WHERE depo.id not in (select pagamento_deposito_id from estorno_deposito) and
+
+	(depo.data_transacao BETWEEN '2020-02-07' and '2020-12-12')) as deposito,
+
+	(select distinct sum(cart.valor) from cobranca as cb
+	INNER JOIN divida AS d ON cb.divida_id = d.id
+	INNER JOIN aluno AS a ON d.aluno_id = a.id
+	INNER JOIN unidade AS u ON a.unidade_id = u.id
+	INNER JOIN grade_curricular AS gc on a.grade_curricular_id = gc.id
+	INNER JOIN curso_turno AS ct ON gc.curso_turno_id = ct.id
+	INNER JOIN curso AS c ON ct.curso_id = c.id
+	INNER JOIN pagamento AS pg ON pg.cobranca_id = cb.id
+	INNER JOIN pagamento_cartao AS cart ON cart.pagamento_id = pg.id
+	
+	WHERE cart.id not in (select pagamento_cartao_id from estorno_cartao) and
+
+	(cart.data_transacao BETWEEN '2020-02-07' and '2020-12-12')) as cartao
+	
+	from curso
+	inner join unidade u on u.id = curso.unidade_id
+	order by curso.nome
+
+==========================================================================================================================================================================
+
+ select distinct u.id, c.id, c.nome, c.tipo_curso, sum(pd.valor) as Valor_Dinheiro, sum(pc.valor) as Valor_Cartao, sum(pde.valor) as Valor_Desposito, (sum(pd.valor) + sum(pc.valor) + sum(pde.valor)) as Valor_Total from pagamento p 
+ full join pagamento_dinheiro pd on pd.pagamento_id = p.id
+ full join pagamento_cartao pc on pc.pagamento_id = p.id
+ full join pagamento_deposito pde on pde.pagamento_id = p.id
+ inner join cobranca cb on p.cobranca_id = cb.id
+ inner join divida d on cb.divida_id = d.id
+ inner join aluno a on d.aluno_id = a.id
+ inner join grade_curricular gc on a.grade_curricular_id = gc.id
+ inner join curso_turno ct on gc.curso_turno_id = ct.id
+ inner join curso c on ct.curso_id = c.id
+ inner join unidade u on c.unidade_id = u.id 
+ WHERE pd.id not in (select pagamento_dinheiro_id from estorno_dinheiro) and
+       (pd.data_transacao BETWEEN '2020-02-07' and '2020-12-12') or
+       
+       pde.id not in (select pagamento_deposito_id from estorno_deposito) and
+       (pde.data_transacao BETWEEN '2020-02-07' and '2020-12-12') or
+
+       pc.id not in (select pagamento_cartao_id from estorno_cartao) and
+       (pc.data_transacao BETWEEN '2020-02-07' and '2020-12-12')
+
+	group by u.id, c.id
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
