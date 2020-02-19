@@ -127,6 +127,60 @@ select distinct curso.nome, curso.tipo_curso, (select distinct sum(pgdi.valor) F
 
 	group by u.id, c.id
 
+
+==========================================================================================================================================================================
+
+select distinct u.id, c.id, c.nome, c.tipo_curso, (sum(pd.valor)+0) as Valor_Dinheiro, (sum(pc.valor)+0) as Valor_Cartao, (sum(pde.valor) + 0) as Valor_Desposito, ((sum(pd.valor) + sum(pc.valor) + sum(pde.valor))+0) as Valor_Total from pagamento p 
+ full join pagamento_dinheiro pd on pd.pagamento_id = p.id
+ full join pagamento_cartao pc on pc.pagamento_id = p.id
+ full join pagamento_deposito pde on pde.pagamento_id = p.id
+ inner join cobranca cb on p.cobranca_id = cb.id
+ inner join divida d on cb.divida_id = d.id
+ inner join aluno a on d.aluno_id = a.id
+ inner join grade_curricular gc on a.grade_curricular_id = gc.id
+ inner join curso_turno ct on gc.curso_turno_id = ct.id
+ inner join curso c on ct.curso_id = c.id
+ inner join unidade u on c.unidade_id = u.id 
+ WHERE c.id = 2 and u.id = 1 and  
+ 
+	(pd.id not in (select pagamento_dinheiro_id from estorno_dinheiro) and
+       (pd.data_transacao BETWEEN '2020-02-07' and '2020-12-12') or
+       
+       pde.id not in (select pagamento_deposito_id from estorno_deposito) and
+       (pde.data_transacao BETWEEN '2020-02-07' and '2020-12-12') or
+
+       pc.id not in (select pagamento_cartao_id from estorno_cartao) and
+       (pc.data_transacao BETWEEN '2020-02-07' and '2020-12-12') )
+       
+
+	group by u.id, c.id
+
+==========================================================================================================================================================================
+
+select distinct u.id, c.id, c.nome, c.tipo_curso, sum(pd.valor) as Valor_Dinheiro,  sum(pc.valor) as Valor_Cartao, sum(pde.valor) as Valor_Desposito, (COALESCE (sum(pd.valor),0) + COALESCE(sum(pc.valor),0) + COALESCE(sum(pde.valor),0)) as Valor_Total from pagamento p 
+ full join pagamento_dinheiro pd on pd.pagamento_id = p.id
+ full join pagamento_cartao pc on pc.pagamento_id = p.id
+ full join pagamento_deposito pde on pde.pagamento_id = p.id
+ inner join cobranca cb on p.cobranca_id = cb.id
+ inner join divida d on cb.divida_id = d.id
+ inner join aluno a on d.aluno_id = a.id
+ inner join grade_curricular gc on a.grade_curricular_id = gc.id
+ inner join curso_turno ct on gc.curso_turno_id = ct.id
+ inner join curso c on ct.curso_id = c.id
+ inner join unidade u on c.unidade_id = u.id 
+ WHERE c.id = 2 and u.id = 1 and  
+ 
+	(pd.id not in (select pagamento_dinheiro_id from estorno_dinheiro) and
+       (pd.data_transacao BETWEEN '2020-02-07' and '2020-12-12') or
+       
+       pde.id not in (select pagamento_deposito_id from estorno_deposito) and
+       (pde.data_transacao BETWEEN '2020-02-07' and '2020-12-12') or
+
+       pc.id not in (select pagamento_cartao_id from estorno_cartao) and
+       (pc.data_transacao BETWEEN '2020-02-07' and '2020-12-12') )
+       
+
+	group by u.id, c.id
 	
 
 
