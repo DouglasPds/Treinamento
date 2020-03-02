@@ -103,29 +103,6 @@ select distinct curso.nome, curso.tipo_curso, (select distinct sum(pgdi.valor) F
 	inner join unidade u on u.id = curso.unidade_id
 	order by curso.nome
 
-==========================================================================================================================================================================
-
- select distinct u.id, c.id, c.nome, c.tipo_curso, sum(pd.valor) as Valor_Dinheiro, sum(pc.valor) as Valor_Cartao, sum(pde.valor) as Valor_Desposito, (sum(pd.valor) + sum(pc.valor) + sum(pde.valor)) as Valor_Total from pagamento p 
- full join pagamento_dinheiro pd on pd.pagamento_id = p.id
- full join pagamento_cartao pc on pc.pagamento_id = p.id
- full join pagamento_deposito pde on pde.pagamento_id = p.id
- inner join cobranca cb on p.cobranca_id = cb.id
- inner join divida d on cb.divida_id = d.id
- inner join aluno a on d.aluno_id = a.id
- inner join grade_curricular gc on a.grade_curricular_id = gc.id
- inner join curso_turno ct on gc.curso_turno_id = ct.id
- inner join curso c on ct.curso_id = c.id
- inner join unidade u on c.unidade_id = u.id 
- WHERE pd.id not in (select pagamento_dinheiro_id from estorno_dinheiro) and
-       (pd.data_transacao BETWEEN '2020-02-07' and '2020-12-12') or
-       
-       pde.id not in (select pagamento_deposito_id from estorno_deposito) and
-       (pde.data_transacao BETWEEN '2020-02-07' and '2020-12-12') or
-
-       pc.id not in (select pagamento_cartao_id from estorno_cartao) and
-       (pc.data_transacao BETWEEN '2020-02-07' and '2020-12-12')
-
-	group by u.id, c.id
 
 
 ==========================================================================================================================================================================
@@ -183,11 +160,111 @@ select distinct u.id, c.id, c.nome, c.tipo_curso, sum(pd.valor) as Valor_Dinheir
 	group by u.id, c.id
 	
 
+==========================================================================================================================================================================
+
+select distinct u.id, c.id, c.nome, c.tipo_curso, (COALESCE (sum(pd.valor),0) + COALESCE(sum(pc.valor),0) + COALESCE(sum(pde.valor),0)) as Valor_Arrecadado from pagamento p 
+ full join pagamento_dinheiro pd on pd.pagamento_id = p.id
+ full join pagamento_cartao pc on pc.pagamento_id = p.id
+ full join pagamento_deposito pde on pde.pagamento_id = p.id
+ inner join cobranca cb on p.cobranca_id = cb.id
+ inner join divida d on cb.divida_id = d.id
+ inner join aluno a on d.aluno_id = a.id
+ inner join grade_curricular gc on a.grade_curricular_id = gc.id
+ inner join curso_turno ct on gc.curso_turno_id = ct.id
+ inner join curso c on ct.curso_id = c.id
+ inner join unidade u on c.unidade_id = u.id 
+ WHERE u.id = 1 and c.id = 2 and
+ 
+	(pd.id not in (select pagamento_dinheiro_id from estorno_dinheiro) and
+	((pd.data_transacao >= '2020-02-07' AND '2020-12-12' IS NULL)    OR
+         pd.data_transacao BETWEEN '2020-02-07' AND CAST(CAST('2020-12-12' AS TEXT) AS DATE)) or
+       
+       pde.id not in (select pagamento_deposito_id from estorno_deposito) and
+       ((pde.data_transacao >= '2020-02-07' AND '2020-12-12' IS NULL)    OR
+         pde.data_transacao BETWEEN '2020-02-07' AND CAST(CAST('2020-12-12' AS TEXT) AS DATE)) or
+
+       pc.id not in (select pagamento_cartao_id from estorno_cartao) and
+       ((pc.data_transacao >= '2020-02-07' AND '2020-12-12' IS NULL)    OR
+         pc.data_transacao BETWEEN '2020-02-07' AND CAST(CAST('2020-12-12' AS TEXT) AS DATE)))
+       
+	group by u.id, c.id
+	order by c.nome
 
 
+==========================================================================================================================================================================
+SELECT DISTINCT c.id, c.nome AS curso, c.tipo_curso, (COALESCE (sum(pd.valor),0) + COALESCE(sum(pc.valor),0) + COALESCE(sum(pde.valor),0)) AS valor FROM pagamento p 
+            FULL JOIN pagamento_dinheiro pd ON pd.pagamento_id = p.id 
+            FULL JOIN pagamento_cartao pc ON pc.pagamento_id = p.id
+            FULL JOIN pagamento_deposito pde ON pde.pagamento_id = p.id 
+            INNER JOIN cobranca cb ON p.cobranca_id = cb.id 
+            INNER JOIN divida d ON cb.divida_id = d.id 
+            INNER JOIN aluno a ON d.aluno_id = a.id 
+            INNER JOIN grade_curricular gc ON a.grade_curricular_id = gc.id 
+            INNER JOIN curso_turno ct ON gc.curso_turno_id = ct.id 
+            INNER JOIN curso c ON ct.curso_id = c.id 
+            INNER JOIN unidade u ON c.unidade_id = u.id  
+            WHERE u.id = 1 AND (CAST (c.id AS VARCHAR(9)) LIKE '%' || '' || '%') AND
+            
+            (pd.id NOT IN (SELECT pagamento_dinheiro_id FROM estorno_dinheiro) AND 
+            ((pd.data_transacao >=  CAST('2020-02-07' AS DATE) AND '2020-12-12'  IS NULL)    OR 
+                     pd.data_transacao BETWEEN  CAST('2020-02-07' AS DATE) AND  CAST(CAST('2020-12-12' AS TEXT)AS DATE)) OR 
+                    
+                   pde.id NOT IN (SELECT pagamento_deposito_id FROM estorno_deposito) AND 
+                   ((pde.data_transacao >=  CAST('2020-02-07' AS DATE) AND  '2020-12-12' IS NULL)    OR 
+                     pde.data_transacao BETWEEN  CAST('2020-02-07' AS DATE) AND  CAST(CAST('2020-12-12' AS TEXT)AS DATE)) OR 
+            
+                   pc.id NOT IN (SELECT pagamento_cartao_id FROM estorno_cartao) AND 
+                   ((pc.data_transacao >=  CAST('2020-02-07' AS DATE) AND  '2020-12-12' IS NULL)    OR 
+                     pc.data_transacao BETWEEN  CAST('2020-02-07' AS DATE) AND  CAST(CAST('2020-12-12' AS TEXT)AS DATE))) 
+                    
+            GROUP BY u.id, c.id 
+            ORDER BY c.nome
 
 
+==========================================================================================================================================================================
 
+(not exists (select pagamento_dinheiro_id from estorno_dinheiro ed
+	inner join pagamento_dinheiro pd on pd.id = ed.pagamento_dinheiro_id
+	where pd.id <> ed.pagamento_dinheiro_id) and
+
+not exists (select  from estorno_cartao ec
+	inner join pagamento_cartao pc on pc.id != ec.pagamento_cartao_id
+	where pc.id <> ec.pagamento_cartao_id) and
+
+not exists (select  from estorno_deposito ede
+	inner join pagamento_deposito pde on pde.id != ede.pagamento_deposito_id
+	where pde.id <> ede.pagamento_deposito_id) and
+
+==========================================================================================================================================================================
+
+
+SELECT DISTINCT c.id, c.nome AS curso, c.tipo_curso, (COALESCE (sum(pd.valor),0) + COALESCE(sum(pc.valor),0) + COALESCE(sum(pde.valor),0)) AS valor FROM pagamento p 
+	FULL JOIN pagamento_dinheiro pd ON pd.pagamento_id = p.id 
+		AND NOT EXISTS (SELECT pagamento_dinheiro_id FROM estorno_dinheiro WHERE pd.id = pagamento_dinheiro_id)
+	FULL JOIN pagamento_deposito pde ON pde.pagamento_id = p.id 
+		AND NOT EXISTS (SELECT pagamento_deposito_id FROM estorno_deposito WHERE pde.id = pagamento_deposito_id)
+	FULL JOIN pagamento_cartao pc ON pc.pagamento_id = p.id 
+		AND NOT EXISTS (SELECT pagamento_cartao_id FROM estorno_cartao WHERE pc.id = pagamento_cartao_id)
+	INNER JOIN cobranca cb ON p.cobranca_id = cb.id 
+	INNER JOIN divida d ON cb.divida_id = d.id 
+	INNER JOIN aluno a ON d.aluno_id = a.id 
+	INNER JOIN grade_curricular gc ON a.grade_curricular_id = gc.id 
+	INNER JOIN curso_turno ct ON gc.curso_turno_id = ct.id 
+	INNER JOIN curso c ON ct.curso_id = c.id 
+	INNER JOIN unidade u ON c.unidade_id = u.id  
+	WHERE u.id = 1 AND (CAST (c.id AS VARCHAR(9)) LIKE '%' || '' || '%') AND
+ 	(
+		((pd.data_transacao >=  CAST('2020-02-07' AS DATE) AND '2020-12-12'  IS NULL) OR 
+			pd.data_transacao BETWEEN  CAST('2020-02-07' AS DATE) AND  CAST(CAST('2020-12-12' AS TEXT)AS DATE)) OR 
+		       
+		((pde.data_transacao >=  CAST('2020-02-07' AS DATE) AND  '2020-12-12' IS NULL) OR 
+			pde.data_transacao BETWEEN  CAST('2020-02-07' AS DATE) AND  CAST(CAST('2020-12-12' AS TEXT)AS DATE)) OR 
+
+		((pc.data_transacao >=  CAST('2020-02-07' AS DATE) AND  '2020-12-12' IS NULL) OR 
+			pc.data_transacao BETWEEN  CAST('2020-02-07' AS DATE) AND  CAST(CAST('2020-12-12' AS TEXT)AS DATE))
+	)                    
+	GROUP BY u.id, c.id 
+	ORDER BY c.nome
 
 
 
